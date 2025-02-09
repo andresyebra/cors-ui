@@ -1,0 +1,219 @@
+
+
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl  text-red-500 font-bold mb-4">CORS Configuration Dashboard</h1>
+
+  <!-- Last Updated and Summary Cards -->
+  <div class="mb-6">
+    <div class="text-sm text-gray-600 mb-4">
+      Last updated: <%= @last_updated.strftime("%H:%M:%S") %>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white shadow-md rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-gray-700">Total Resources</h3>
+        <p class="text-2xl font-bold text-blue-600">
+          <%= pluralize(@cors_configs.size, 'Resource') %>
+        </p>
+      </div>
+      <div class="bg-white shadow-md rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-gray-700">Total Origins</h3>
+        <p class="text-2xl font-bold text-green-600">
+          <%#= @cors_configs.sum { |c| c[:origins].size } %>
+          <%= pluralize(@cors_configs.sum { |c| c[:origins].size }, 'Origin') %>
+        </p>
+      </div>
+      <div class="bg-white shadow-md rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-gray-700">Total Methods</h3>
+        <p class="text-2xl font-bold text-purple-600">
+          <%= @cors_configs.sum { |c| c[:methods] == :any ? 1 : c[:methods].size } %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORS Configurations -->
+  <% if @cors_configs.empty? %>
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+      <p class="font-bold">No CORS configurations found</p>
+    </div>
+  <% else %>
+    <div class="space-y-4">
+      <% @cors_configs.each_with_index do |config, index| %>
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+          <div class="p-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold">
+              Resource: <code class="ml-2 text-sm bg-gray-100 p-1 rounded"><%= config[:path] %></code>
+            </h2>
+          </div>
+
+          <div class="p-4">
+            <!-- Origins -->
+            <div class="mb-4">
+<!--              <h3 class="text-md font-semibold mb-2">Allowed Origins</h3>-->
+              <% if config[:origins].any? %>
+                <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                  <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                      <th scope="col" class="px-6 py-3">Origin</th>
+                      <th scope="col" class="px-6 py-3">Type</th>
+                      <th scope="col" class="px-6 py-3">Security</th>
+                      <th scope="col" class="px-6 py-3">
+                        <span class="sr-only">Edit</span>
+                      </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <% config[:origins].each do |origin| %>
+                      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                          <code><%= origin %></code>
+                        </td>
+                        <td class="px-6 py-4">
+                          <%= origin == '*' ? 'Wildcard' : 'Specific' %>
+                        </td>
+                        <td class="px-6 py-4">
+                          <% if origin == '*' %>
+                            <span class="text-red-600 dark:text-red-400">High Risk</span>
+                          <% else %>
+                            <span class="text-green-600 dark:text-green-400">Controlled</span>
+                          <% end %>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                          <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                        </td>
+                      </tr>
+                    <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+                  <p class="font-bold">No origins configured</p>
+                </div>
+              <% end %>
+
+              <%# if config[:origins].any? %>
+<!--                <div class="bg-gray-50 p-3 rounded-lg">-->
+                  <%# config[:origins].each do |origin| %>
+<!--                    <div class="text-sm text-gray-700"><code><%#= origin %></code></div>-->
+                  <%# end %>
+<!--                </div>-->
+              <%# else %>
+<!--                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">-->
+<!--                  <p class="font-bold">No origins configured</p>-->
+<!--                </div>-->
+              <%# end %>
+            </div>
+
+            <!-- Methods -->
+            <div class="mb-4">
+              <h3 class="text-md font-semibold mb-2">Allowed Methods</h3>
+              <% if config[:methods] == :any %>
+                <span class="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-2.5 py-0.5 rounded">ANY</span>
+              <% elsif config[:methods].any? %>
+                <div class="flex flex-wrap gap-2">
+                  <% config[:methods].each do |method| %>
+                    <span class="inline-block bg-red-500 text-white text-sm font-semibold px-2.5 py-0.5 rounded">
+                      <%= method.upcase %>
+                    </span>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+                  <p class="font-bold">No methods configured</p>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Headers -->
+            <div class="mb-4">
+              <h3 class="text-md font-semibold mb-2">Allowed Headers</h3>
+              <% if config[:headers] == :any %>
+                <span class="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-2.5 py-0.5 rounded">ANY</span>
+              <% elsif config[:headers].any? %>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <% config[:headers].each do |header| %>
+                    <div class="text-sm text-gray-700"><code><%= header %></code></div>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+                  <p class="font-bold">No headers configured</p>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Exposed Headers -->
+            <div class="mb-4">
+              <h3 class="text-md font-semibold mb-2">Exposed Headers</h3>
+              <% if config[:expose] == :any %>
+                <span class="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-2.5 py-0.5 rounded">ANY</span>
+              <% elsif config[:expose].any? %>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <% config[:expose].each do |header| %>
+                    <div class="text-sm text-gray-700"><code><%= header %></code></div>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+                  <p class="font-bold">No headers exposed</p>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Additional Configuration -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- Max Age -->
+              <div>
+                <h3 class="text-md font-semibold mb-2">Max Age</h3>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <div class="text-sm text-gray-700">
+                    <%= config[:max_age] || "Not set" %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Credentials -->
+              <div>
+                <h3 class="text-md font-semibold mb-2">Credentials</h3>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <div class="text-sm text-gray-700">
+                    <%= config[:credentials] ? "Allowed" : "Not allowed" %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Public Resource -->
+              <div>
+                <h3 class="text-md font-semibold mb-2">Public Resource</h3>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <div class="text-sm text-gray-700">
+                    <%= config[:public] ? "Yes" : "No" %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Conditional Logic -->
+              <div>
+                <h3 class="text-md font-semibold mb-2">Condition</h3>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <div class="text-sm text-gray-700">
+                    <%= config[:if_condition] %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+
+<br>
+<br>
+<br>
+
