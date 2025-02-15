@@ -2,7 +2,9 @@
 
 
 ## Overview
-**Cors::Ui** is a Rails Engine that provides a web interface for inspecting and testing CORS (Cross-Origin Resource Sharing) configurations in your Rails application.
+**Cors::Ui** is a Rails Engine that provides a web interface for inspecting and testing CORS (`Cross-Origin Resource Sharing`) configurations in your Rails application.
+
+Cross-Origin Resource Sharing (`CORS`) is a security feature that restricts cross-origin HTTP requests. In Rails, you can configure CORS using the `rack-cors` gem to define allowed origins, methods, and headers.
 
 ## Installation
 Add this line to your application's Gemfile:
